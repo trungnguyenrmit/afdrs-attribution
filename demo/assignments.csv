@@ -1,0 +1,6 @@
+obs_id,Attributor,reviewer_email,review_type
+DEMO_001,Expert_A,expert.a@example.org,primary
+DEMO_001,Expert_B,expert.b@example.org,QA
+DEMO_001,Expert_C,expert.c@example.org,QA
+DEMO_002,Expert_A,expert.a@example.org,primary
+DEMO_003,Expert_B,expert.b@example.org,primary

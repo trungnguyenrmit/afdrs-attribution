@@ -1,0 +1,4 @@
+GFC,GFC_previous,confidence,continuity,curing,load,fueltype,id,imageUrl,loc_name,obs_id,obsdate,state,status,longitude,latitude
+1,2,1,0,90,1.5,2,DEMO_SITE_1,,Synthetic example A,DEMO_001,01-05-2025,SA,demo,138.6,-34.9
+2,1,1,1,65,3,2,DEMO_SITE_2,,Synthetic example B,DEMO_002,02-05-2025,SA,demo,138.7,-35.0
+3,2,1,1,30,4.5,2,DEMO_SITE_3,,Synthetic example C,DEMO_003,03-05-2025,SA,demo,138.8,-35.1

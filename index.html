@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <title>AFDRS · Reference uplift</title>
+  <link rel="stylesheet" href="vendor/leaflet.css">
+  <link rel="stylesheet" href="styles.css">
+  <script defer src="vendor/leaflet.js"></script>
+  <script defer src="vendor/msal-browser.min.js"></script>
+  <script defer src="config.js"></script>
+  <script defer src="core.js"></script>
+  <script defer src="graph.js"></script>
+  <script defer src="app.js"></script>
+</head>
+<body>
+<header><div><span class="eyebrow">AFDRS / EXPERT REVIEW</span><h1>Reference uplift<span class="tag">Pilot</span></h1></div><div id="identity">Local preview</div></header>
+<main>
+  <div id="notice" role="status" aria-live="polite">Choose a data source to begin. Original observations are never edited.</div>
+  <details id="setup" open class="panel">
+    <summary>Data source & connection</summary>
+    <div class="setup-grid">
+      <section><h2>Try on this computer</h2><p>Load observations and assignments, or try the synthetic demo.</p>
+        <label>Observations CSV<input type="file" id="sourceFile" accept=".csv,text/csv"></label>
+        <label>Assignments CSV<input type="file" id="assignmentFile" accept=".csv,text/csv"></label>
+        <div class="buttons"><button id="loadLocal">Load selected files</button><button id="loadWorkspace" class="secondary">Load SA dataset</button><button id="demo" class="secondary">Synthetic demo</button></div>
+        <p class="hint">SA dataset requires the supplied local server. No real observations are bundled with this website.</p>
+        <label>Resume from review CSV files<input type="file" id="importReviews" accept=".csv,text/csv" multiple></label>
+      </section>
+      <section><h2>Connect to OneDrive</h2><p>Use the same configuration for all reviewers. Sign-in happens on Microsoft.</p>
+        <div class="two"><label>Application (client) ID<input id="clientId" autocomplete="off"></label><label>Directory (tenant) ID<input id="tenantId" placeholder="Tenant ID, organizations or common"></label></div>
+        <div class="two"><label>Drive ID<input id="driveId"></label><label>Shared project folder ID<input id="folderId"></label></div>
+        <label>Shared folder link (optional: resolve IDs)<input id="shareLink" type="url" placeholder="https://…"></label>
+        <div class="buttons"><button id="resolve" class="secondary">Resolve shared folder</button></div>
+        <label>Observations path, relative to project folder<input id="sourcePath"></label>
+        <div class="two"><label>Assignments path<input id="assignmentsPath"></label><label>Existing outputs folder<input id="outputsPath"></label></div>
+        <div class="buttons"><button id="login">Sign in with Microsoft</button><button id="loadCloud" class="secondary">Load OneDrive project</button><button id="logout" class="secondary">Sign out</button></div>
+        <p class="hint">Only a successful upload is labelled “Saved to OneDrive”. Local drafts remain on this browser.</p>
+      </section>
+    </div>
+  </details>
+  <section class="panel toolbar" aria-label="Review queue">
+    <label>Attributor<select id="attributor"><option value="">Load data first</option></select></label>
+    <label>Queue<select id="filter"><option value="all">All assigned</option><option value="pending">Not completed</option><option value="complete">Completed</option></select></label>
+    <label>Find record<input id="search" type="search" placeholder="Observation ID or location"></label>
+    <div class="progress"><strong id="progress">0 / 0 completed</strong><progress id="progressBar" value="0" max="1"></progress></div>
+    <button id="exportAll" class="secondary" disabled>Export my reviews</button>
+  </section>
+  <div id="empty" class="panel empty"><h2>Your review workspace</h2><p>Choose an Attributor to see their assigned observations.</p></div>
+  <div id="workspace" hidden>
+    <nav class="record-nav"><button id="prev" class="secondary">← Previous</button><div><strong id="recordTitle"></strong><div id="recordMeta" class="hint"></div></div><button id="next" class="secondary">Next →</button></nav>
+    <div class="review-grid">
+      <div class="evidence">
+        <section class="panel photo-panel"><div class="section-heading"><h2>Field photograph</h2><a id="photoLink" target="_blank" rel="noopener noreferrer" hidden>Open full size ↗</a></div><div class="photo-stage"><img id="photo" alt="Field observation photograph" hidden><p id="photoStatus">No image</p></div></section>
+        <section class="panel"><div class="section-heading"><h2>Point location</h2><a id="mapLink" target="_blank" rel="noopener noreferrer">Open satellite map ↗</a></div><div id="map"></div><p id="coords" class="hint"></p><p class="hint">Basemap date is unknown. Use it for spatial context, not as evidence of GFC on the observation date.</p></section>
+        <details class="panel" open><summary>Original attributes</summary><p class="hint">Read-only. Previous values are supplied by the source, without a verified previous observation date.</p><table id="attributes"><tbody></tbody></table></details>
+      </div>
+      <section class="panel form-panel"><div class="section-heading"><h2>Expert assessment</h2><span id="saveState" class="tag">Not reviewed</span></div>
+        <form id="reviewForm">
+          <fieldset><legend>1. Is the photograph sufficient to re-attribute GFC?</legend><label class="choice"><input type="radio" name="image_valid" value="yes" required> Yes</label><label class="choice"><input type="radio" name="image_valid" value="no"> No</label></fieldset>
+          <label id="imageReasonWrap" hidden>Why is the photograph insufficient?<select name="image_issue"><option value="">Select a reason</option><option value="missing">Missing photograph</option><option value="unavailable">Photograph unavailable</option><option value="blurred">Blurred / low resolution</option><option value="obscured">Obscured view</option><option value="angle">Unsuitable view / angle</option><option value="no_grass">Grass not visible</option><option value="other">Other (explain in notes)</option></select></label>
+          <label>2. Is the point located in a grass area?<select name="point_in_grass" required><option value="">Select an answer</option><option value="yes">Yes</option><option value="no">No</option><option value="uncertain">Cannot determine</option></select></label>
+          <label>3. Does the photograph represent the area at the point?<select name="photo_representative" required><option value="">Select an answer</option><option value="yes">Yes</option><option value="no">No</option><option value="uncertain">Cannot determine</option></select></label>
+          <label id="agreementWrap">4. Do you agree with the original GFC?<select name="agree_gfc" required><option value="">Select an answer</option><option value="yes">Yes</option><option value="no">No</option><option value="insufficient">Insufficient evidence</option></select></label>
+          <div id="newGfcWrap" hidden><label>Proposed GFC<select name="gfc_proposed"><option value="">Select GFC</option></select></label><label>Reason for changing GFC<textarea name="review_reason" rows="3" maxlength="4000"></textarea></label></div>
+          <label id="confidenceWrap">Confidence in GFC assessment<select name="review_confidence"><option value="">Select confidence</option><option value="high">High</option><option value="medium">Medium</option><option value="low">Low</option></select></label>
+          <label>Notes<textarea name="notes" rows="3" maxlength="4000" placeholder="Evidence, uncertainty or location issues"></textarea></label>
+          <p class="hint">QA reviews are independent: other experts’ answers are not displayed.</p>
+          <div class="buttons"><button type="submit" id="save">Save review</button><button type="button" id="exportOne" class="secondary">Download this review CSV</button></div>
+          <p id="draftStatus" class="hint" aria-live="polite">Changes are saved as local drafts.</p>
+        </form>
+      </section>
+    </div>
+  </div>
+</main>
+<footer>AFDRS reference uplift · Pilot v0.1 · Source observations remain unchanged</footer>
+</body></html>
